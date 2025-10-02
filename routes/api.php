@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PublicationController;
+use App\Http\Controllers\SaleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +16,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+// Rutas de publicaciones
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/publications', [PublicationController::class, 'index']);
+    Route::post('/publications', [PublicationController::class, 'store']);
+    Route::get('/publications/{id}', [PublicationController::class, 'show']);
+    Route::put('/publications/{id}', [PublicationController::class, 'update']);
+    Route::delete('/publications/{id}', [PublicationController::class, 'destroy']);
+    Route::patch('/publications/{id}/status', [PublicationController::class, 'changeStatus']);
+});
+
+// Rutas de ventas
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/sales', [SaleController::class, 'index']);
+    Route::post('/sales', [SaleController::class, 'store']);
+    Route::get('/sales/{id}', [SaleController::class, 'show']);
 });
