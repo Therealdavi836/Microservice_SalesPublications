@@ -3,71 +3,94 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use App\Models\Publication;
+use Illuminate\Support\Facades\Http;
 
 class PublicationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    // Listar todas las publicaciones activas
-    public function index()
+    // 🔹 Helper para validar usuario en Auth MS
+    private function getAuthenticatedUser($request)
     {
+        $token = $request->bearerToken();
+        if (!$token) {
+            return null;
+        }
+
+        $authResponse = Http::withToken($token)->get("http://localhost:8000/api/me");
+
+        if ($authResponse->failed()) {
+            return null;
+        }
+
+        return $authResponse->json(); // { id, name, email, role }
+    }
+
+    // Listar todas las publicaciones activas (opcional: filtrar por usuario)
+    public function index(Request $request)
+    {
+        if ($request->has('user_id')) {
+            return Publication::where('status', 'activo')
+                ->where('user_id', $request->query('user_id'))
+                ->get();
+        }
+
         return Publication::where('status', 'activo')->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    // Crear una publicación (solo usuarios autenticados con rol seller)
+    // Crear una publicación (solo usuarios con rol seller)
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'vehicle_id' => 'required|string',
-            'title' => 'required|string',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0'
+            'vehicle_id'   => 'required|string',
+            'title'        => 'required|string',
+            'description'  => 'nullable|string',
+            'price'        => 'required|numeric|min:0'
         ]);
 
-        // 1. Validar vehículo contra micro Catálogo
-        $catalogResponse = Http::get("http://localhost:8001/api/vehicles/{$validated['vehicle_id']}");
+        $user = $this->getAuthenticatedUser($request);
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
 
+        if ($user['role'] !== 'seller') {
+            return response()->json(['error' => 'Solo vendedores pueden publicar'], 403);
+        }
+
+        // Validar vehículo contra Catálogo MS
+        $catalogResponse = Http::get("http://localhost:8001/api/vehicles/{$validated['vehicle_id']}");
         if ($catalogResponse->failed()) {
             return response()->json(['error' => 'El vehículo no existe en el catálogo'], 400);
         }
 
-        // 2. Crear publicación con el seller autenticado
         $publication = Publication::create([
-            'user_id' => $request->user()->id, // seller del Auth MS
+            'user_id'    => $user['id'],
             'vehicle_id' => $validated['vehicle_id'],
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? null,
-            'price' => $validated['price'],
-            'status' => 'activo'
+            'title'      => $validated['title'],
+            'description'=> $validated['description'] ?? null,
+            'price'      => $validated['price'],
+            'status'     => 'activo'
         ]);
 
         return response()->json($publication, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     // Ver una publicación por ID
     public function show($id)
     {
         return Publication::findOrFail($id);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    // Editar una publicación (solo el seller dueño puede hacerlo)
+    // Editar publicación (solo seller dueño puede hacerlo)
     public function update(Request $request, $id)
     {
         $publication = Publication::findOrFail($id);
 
-        if ($publication->user_id !== $request->user()->id) {
+        $user = $this->getAuthenticatedUser($request);
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        if ($user['role'] !== 'seller' || $publication->user_id !== $user['id']) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
@@ -76,15 +99,17 @@ class PublicationController extends Controller
         return response()->json($publication);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     // Eliminar publicación (solo seller dueño)
     public function destroy(Request $request, string $id)
     {
         $publication = Publication::findOrFail($id);
 
-        if ($publication->user_id !== $request->user()->id) {
+        $user = $this->getAuthenticatedUser($request);
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        if ($user['role'] !== 'seller' || $publication->user_id !== $user['id']) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
@@ -98,7 +123,12 @@ class PublicationController extends Controller
     {
         $publication = Publication::findOrFail($id);
 
-        if ($publication->user_id !== $request->user()->id) {
+        $user = $this->getAuthenticatedUser($request);
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        if ($user['role'] !== 'seller' || $publication->user_id !== $user['id']) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
