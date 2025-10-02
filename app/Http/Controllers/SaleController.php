@@ -24,21 +24,21 @@ class SaleController extends Controller
 
         $publication = Publication::findOrFail($validated['publication_id']);
 
-        // Verificar que la publicación siga activa
+        // 1. Verificar que la publicación siga activa
         if ($publication->status !== 'activo') {
             return response()->json(['error' => 'La publicación no está disponible'], 400);
         }
 
-        // Crear la venta
+        // 2. Registrar la venta
         $sale = Sale::create([
             'publication_id' => $publication->id,
-            'customer_id' => $request->user()->id, // quien compra
-            'seller_id' => $publication->user_id,  // dueño original
+            'customer_id' => $request->user()->id, // customer desde Auth MS
+            'seller_id' => $publication->user_id,  // seller desde publicación
             'sale_price' => $validated['sale_price'],
             'sale_date' => now()
         ]);
 
-        // Cambiar estado de la publicación a "vendido"
+        // 3. Cambiar estado de publicación
         $publication->status = 'vendido';
         $publication->save();
 

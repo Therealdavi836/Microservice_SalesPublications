@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use App\Models\Publication;
 
 class PublicationController extends Controller
@@ -29,8 +30,16 @@ class PublicationController extends Controller
             'price' => 'required|numeric|min:0'
         ]);
 
+        // 1. Validar vehículo contra micro Catálogo
+        $catalogResponse = Http::get("http://localhost:8001/api/vehicles/{$validated['vehicle_id']}");
+
+        if ($catalogResponse->failed()) {
+            return response()->json(['error' => 'El vehículo no existe en el catálogo'], 400);
+        }
+
+        // 2. Crear publicación con el seller autenticado
         $publication = Publication::create([
-            'user_id' => $request->user()->id, // seller
+            'user_id' => $request->user()->id, // seller del Auth MS
             'vehicle_id' => $validated['vehicle_id'],
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
