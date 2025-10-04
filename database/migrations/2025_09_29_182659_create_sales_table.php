@@ -20,19 +20,26 @@ return new class extends Migration
             // Usuario que compra (rol: customer en Auth Service)
             $table->unsignedBigInteger('customer_id');
 
+            // Usuario que vende (rol: seller en Auth Service)
+            $table->unsignedBigInteger('seller_id');
+
             // Datos de la venta
             $table->decimal('sale_price', 12, 2);
             $table->timestamp('sale_date')->useCurrent();
-            // FK local (publication_id → publications)
-            $table->foreign('publication_id')
-                  ->references('id')
-                  ->on('publications')
-                  ->onDelete('cascade');
 
-            // customer_id viene del micro de Auth, así que solo indexamos
+            // FK local (solo para publications)
+            $table->foreign('publication_id')
+                ->references('id')
+                ->on('publications')
+                ->onDelete('cascade');
+
+            // Índices para búsquedas rápidas
             $table->index('customer_id');
+            $table->index('seller_id');
 
             $table->timestamps();
+
+
         });
     }
 
