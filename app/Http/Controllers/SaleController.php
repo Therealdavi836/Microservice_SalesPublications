@@ -79,6 +79,22 @@ class SaleController extends Controller
         $publication->status = 'vendido';
         $publication->save();
 
+        // Notificar al vendedor
+        Http::post('http://127.0.0.1:8003/api/notifications/', [
+            'user_id' => $sale->seller_id,
+            'title' => 'Venta confirmada',
+            'message' => 'Has vendido tu vehículo exitosamente.',
+            'type' => 'success'
+        ]);
+
+        // Notificar al comprador
+        Http::post('http://127.0.0.1:8003/api/notifications/', [
+            'user_id' => $sale->customer_id,
+            'title' => 'Compra exitosa',
+            'message' => 'Has comprado un vehículo. Revisa tus detalles de compra en tu cuenta.',
+            'type' => 'info'
+        ]);
+
         return response()->json($sale, 201);
     }
 
