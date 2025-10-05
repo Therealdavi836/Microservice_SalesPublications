@@ -57,7 +57,7 @@ class PublicationController extends Controller
         }
 
         // Validar vehículo contra Catálogo MS
-        $catalogResponse = Http::get("http://localhost:8002/vehicles/{$validated['vehicle_id']}");
+        $catalogResponse = Http::get("http://localhost:8001/vehicles/{$validated['vehicle_id']}");
         if ($catalogResponse->failed()) {
             return response()->json(['error' => 'El vehículo no existe en el catálogo'], 400);
         }
