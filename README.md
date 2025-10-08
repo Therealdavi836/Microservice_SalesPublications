@@ -114,10 +114,10 @@ El microservicio cuenta con una carpeta `Locust_Test` que incluye **cuatro archi
 
 | Tipo de prueba      | Controlador  | Archivo                           |
 | ------------------- | ------------ | --------------------------------- |
-| Prueba de carga     | Publications | `locust_load_publications.py`     |
-| Prueba de capacidad | Publications | `locust_capacity_publications.py` |
-| Prueba de carga     | Sales        | `locust_load_sales.py`            |
-| Prueba de capacidad | Sales        | `locust_capacity_sales.py`        |
+| Prueba de carga     | Publications | `locust_carga_publications.py`     |
+| Prueba de capacidad | Publications | `locust_capacidad_publications.py` |
+| Prueba de carga     | Sales        | `locust_carga_sales.py`            |
+| Prueba de capacidad | Sales        | `locust_capacidad_sales.py`        |
 
 ---
 
