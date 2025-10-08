@@ -1,66 +1,150 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Microservicio de Publicaciones y Ventas
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Microservicio desarrollado en **Laravel (PHP 8.2.12)** encargado de gestionar las **publicaciones de vehículos** realizadas por los vendedores (sellers) y registrar las **ventas** efectuadas por los clientes (customers).  
+Forma parte del ecosistema de microservicios del proyecto de **Ingeniería de Software II**, junto con los microservicios de **Autenticación**, **Catálogo de Vehículos** y **Reportes**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tecnologías utilizadas
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Lenguaje:** PHP 8.2.12  
+- **Framework:** Laravel  
+- **Base de datos:** MySQL  
+- **Tipo de arquitectura:** Microservicios basados en API REST  
+- **Pruebas de rendimiento:** Locust (carga y capacidad)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Instalación y configuración
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+1. Clonar el repositorio:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+   ```bash
+   git clone https://github.com/Therealdavi836/Microservice_SalesPublications.git
+   cd Microservice_SalesPublications
+    ```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. Instalar dependencias:
 
-## Laravel Sponsors
+   ```bash
+   composer update
+   ```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+2. Configurar el archivo `.env`:
 
-### Premium Partners
+   ```env
+   APP_NAME=Microservice_SalesPublications
+   APP_ENV=local
+   APP_KEY=base64:GENERAR_LARAVEL_KEY
+   APP_DEBUG=true
+   APP_URL=http://localhost:8002
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=nombre_de_tu_bd
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
 
-## Contributing
+3. Ejecutar el servidor local:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+   ```bash
+   php artisan serve --port=8002
+   ```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Lógica de negocio
 
-## Security Vulnerabilities
+* Una **publicación** pertenece a un **usuario vendedor (seller)**.
+* Una publicación hace referencia a un **vehículo existente** en el **microservicio de catálogo**.
+* Una **venta** relaciona a un **comprador (customer)**, un **vendedor (seller)** y el **vehículo** vendido.
+* Una **oferta** está asociada a una publicación.
+* Los **administradores (admins)** pueden acceder a todos los registros de publicaciones y ventas.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Este microservicio:
 
-## License
+* **Consume** el microservicio de autenticación para **validar tokens y roles**.
+* **Consume** el microservicio de catálogo de vehículos para **verificar la existencia** del vehículo publicado.
+* **Es consumido** por el microservicio de reportes para generar reportes de actividad.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Roles y accesos
+
+| Rol          | Acceso principal                                         |
+| ------------ | -------------------------------------------------------- |
+| **Seller**   | Crear, editar, eliminar y actualizar publicaciones.      |
+| **Customer** | Crear ventas (comprar vehiculos).                        |
+| **Admin**    | Consultar todos los registros de publicaciones y ventas. |
+
+> No existen *middlewares* dedicados, pero el microservicio **recibe el token** y valida el rol del usuario en los controladores mediante métodos personalizados.
+
+---
+
+## Endpoints disponibles
+
+### Publicaciones (`/api/publications`)
+
+| Método   | Endpoint                        | Descripción                          | Parámetros / Body                                                  |
+| -------- | ------------------------------- | ------------------------------------ | ------------------------------------------------------------------ |
+| `GET`    | `/api/publications`             | Obtiene todas las publicaciones.     | —                                                                  |
+| `GET`    | `/api/publications/{id}`        | Obtiene una publicación específica.  | `id`                                                               |
+| `POST`   | `/api/publications`             | Crea una nueva publicación.          | `user_id`, `vehicle_id`, `title`, `description`, `price`, `status` |
+| `PUT`    | `/api/publications/{id}`        | Actualiza una publicación existente. | Igual que POST                                                     |
+| `DELETE` | `/api/publications/{id}`        | Elimina una publicación.             | `id`                                                               |
+| `PATCH`  | `/api/publications/{id}/status` | Cambia el estado de una publicación. | `status`                                                           |
+
+---
+
+### Ventas (`/api/sales`)
+
+| Método | Endpoint          | Descripción                           | Parámetros / Body              |
+| ------ | ----------------- | ------------------------------------- | ------------------------------ |
+| `GET`  | `/api/sales`      | Obtiene todas las ventas registradas. | —                              |
+| `GET`  | `/api/sales/{id}` | Obtiene una venta específica.         | `id`                           |
+| `POST` | `/api/sales`      | Registra una nueva venta.             | `publication_id`, `sale_price` |
+
+---
+
+## Pruebas de rendimiento
+
+El microservicio cuenta con una carpeta `Locust_Test` que incluye **cuatro archivos de prueba**, distribuidos así:
+
+| Tipo de prueba      | Controlador  | Archivo                           |
+| ------------------- | ------------ | --------------------------------- |
+| Prueba de carga     | Publications | `locust_load_publications.py`     |
+| Prueba de capacidad | Publications | `locust_capacity_publications.py` |
+| Prueba de carga     | Sales        | `locust_load_sales.py`            |
+| Prueba de capacidad | Sales        | `locust_capacity_sales.py`        |
+
+---
+
+## Roadmap / Futuras mejoras
+
+* Integración completa con **Docker** y **Kubernetes**.
+* Posible adición de filtros de búsqueda y estadísticas de ventas.
+* Mejoras en la comunicación asíncrona entre microservicios.
+
+---
+
+### Licencia
+
+MIT (heredada de la plantilla base de Laravel).
+
+---
+
+### Contacto / Mantenimiento
+
+* **Autor:** Juan David Fajardo Betancourt
+* **Email:** [jfajardob@unal.edu.co](mailto:jfajardob@unal.edu.co)
+
+---
+
+### Razón
+
+* Proyecto semestral de **Ingeniería de Software II**, semestre **2025-2**.
+* Presentado al docente: **Jose Albeiro Montes Gil**.
+* Documento de planeación:
+  [https://docs.google.com/document/d/1bnb3KTs5Pmeoy83xN5RjugHqdJ3E_rLXUf8NLsQU5xE/edit?usp=sharing](https://docs.google.com/document/d/1bnb3KTs5Pmeoy83xN5RjugHqdJ3E_rLXUf8NLsQU5xE/edit?usp=sharing)
